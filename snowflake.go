@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	// Epoch is set to the twitter snowflake epoch of Nov 04 2010 01:42:54 UTC in milliseconds
+	// Epoch is set to the twitter snowflake epoch of Nov 04 2020-01-01 00:00:00 UTC in milliseconds
 	// You may customize this to set a different epoch for your application.
-	Epoch int64 = 1288834974657
+	Epoch int64 = 1577808000000
 
 	// NodeBits holds the number of bits to use for Node
 	// Remember, you have a total 22 bits to share between Node/Step
@@ -174,6 +174,15 @@ func ParseInt64(id int64) ID {
 // String returns a string of the snowflake ID
 func (f ID) String() string {
 	return strconv.FormatInt(int64(f), 10)
+}
+
+// 高位时间戳格式化
+func (f ID) StringDateFormat() string {
+	timeoffset := (int64(f) >> timeShift)
+	timestamp := timeoffset + Epoch
+	diff := timestamp - ((timestamp / 1e3) * 1e3)
+	// 格式化时间(精确到秒) + 余下的毫秒数 + (高位异或截断 低位保留)
+	return time.Unix(timestamp/1e3, 0).Format("20060102150405") + strconv.FormatInt(diff, 10) + strconv.FormatInt(int64(f)^(timeoffset<<int64(timeShift)), 10)
 }
 
 // ParseString converts a string into a snowflake ID
